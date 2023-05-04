@@ -1,0 +1,109 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+typedef struct
+{
+	int weight;
+	int parent,lchild,rchild;
+}HTNode,*HuffmanTree;
+typedef char **HuffmanCode;
+void Select(HuffmanTree HT,int len,int &s1,int &s2)
+{//此函数找出所有结点中最小的两个 
+	int i;
+	int weight=1000000;
+	for(i=1;i<=len;i++)
+	{
+		if(HT[i].weight<weight&&HT[i].parent==0)
+		{
+			s1=i;
+			weight=HT[i].weight;
+		}
+	}
+	weight=1000000;
+	for(i=1;i<=len;i++)
+	{
+		if(HT[i].weight<weight&&HT[i].parent==0&&i!=s1)
+		{
+			s2=i;
+			weight=HT[i].weight;
+		}
+	}
+}
+void CreateHuffmanTree(HuffmanTree &HT,int n)
+{//创建哈夫曼树 
+	int i,j,s1,s2;
+	if(n<=1)
+	    return ;
+	int m=2*n-1;
+	HT=(HuffmanTree)malloc((m+1)*sizeof(HTNode)); 
+	//HT=new HTNode[m+1];//new是c++中用于申请内存的运算符， 
+	for(i=1;i<=m;i++)//将所有的节点初始化为0 
+	{
+		HT[i].parent=0;
+		HT[i].lchild=0;
+		HT[i].rchild=0;
+	}
+	printf("请输入你所要构造哈夫曼树的结点:\n");
+	for(i=1;i<=n;i++)
+	    scanf("%d",&HT[i].weight);//输入n个单元的叶子结点值 
+    //创建树
+	for(i=n+1;i<=m;i++)
+	{
+		Select(HT,i-1,s1,s2);
+		HT[s1].parent=i;
+		HT[s2].parent=i;//将s1,s2的双亲设置为i; 
+		HT[i].lchild=s1;
+		HT[i].rchild=s2;//将s1  s2设置为i的两个孩子 
+		HT[i].weight=HT[s1].weight+HT[s2].weight;//生成新节点的值 
+	} 
+}
+void CreatHuffmanCode(HuffmanTree HT,HuffmanCode &HC,int n)
+{//求出哈夫曼编码 
+	int i,start;
+	int child,parent;
+	HC=new char*[n+1];
+	char cd[1100];
+	for(i=1;i<=n;i++)
+	{
+		start=n-1;
+		child=i;
+		parent=HT[i].parent;
+		while(parent!=0)
+		{
+			--start;
+			if(HT[parent].lchild==child)
+			cd[start]='0';
+			else
+			cd[start]='1';
+			child=parent;
+			parent=HT[parent].parent;
+		}
+		HC[i]=new char[n-start];
+		strcpy(HC[i],&cd[start]);
+	}
+}
+int query(HuffmanTree HT,int len,int edge)
+{//查询你想要查找的哈夫曼编码的存储位置 
+	int i;
+	for(i=1;i<=len;i++)
+		if(HT[i].weight==edge)
+	return i;
+}
+int main()
+{
+	int k,n;
+	HuffmanTree HT;
+	HuffmanCode HC;
+	printf("请输入您想要构造的哈夫曼树的结点个数:\n");
+	scanf("%d",&n);
+	CreateHuffmanTree(HT,n);
+	printf("构造哈夫曼树完成\n");
+	CreatHuffmanCode(HT,HC,n);
+	while(true)
+	{
+	    printf("请您输入一个你想要的查询哈夫曼编码的结点:\n");
+	    scanf("%d",&k); 
+	    printf("%d的哈夫曼编码为%s\n",k,HC[query(HT,n,k)]);
+	}
+	return 0;
+}
