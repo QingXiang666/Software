@@ -1,0 +1,133 @@
+#include<stdio.h>
+#include<string.h> 
+#include<stdlib.h> 
+#define STACK_INIT_SIZE 100
+#define  OVERFLOW -2
+typedef char SElemType;
+typedef struct {
+	SElemType* base;
+	SElemType* top;
+	int stacksize;
+}SqStack;
+ 
+//初始化栈
+void InitStack(SqStack& S) {
+	S.base = (SElemType*)malloc(STACK_INIT_SIZE * sizeof(SElemType));
+	if (!S.base)exit(OVERFLOW);
+	S.top = S.base;
+	S.stacksize = STACK_INIT_SIZE;
+}
+ 
+//判断栈是否为空
+bool StackEmpty(SqStack S) {
+	if (S.top == S.base)
+		return true;
+	return false;
+}
+ 
+//得到栈顶元素
+SElemType GetTop(SqStack S) {
+	if (!StackEmpty(S))
+		return *(S.top - 1);
+}
+ 
+//入栈
+void Push(SqStack& S, SElemType e) {
+	if (S.top - S.base >= S.stacksize) {//栈如果满了的情况
+		S.base = (SElemType*)realloc(S.base, (S.stacksize + STACK_INIT_SIZE) * sizeof(SElemType));
+		if (!S.base)exit(OVERFLOW);
+		S.top = S.base + S.stacksize;
+		S.stacksize += STACK_INIT_SIZE;
+	}
+	*S.top++ = e;//先把e的值给*S.top，S.top再++
+}
+ 
+//出栈
+void Pop(SqStack& S) {
+	if (!StackEmpty(S))
+		*S.top--;
+}
+ 
+//打印栈内元素
+void PrintStack(SqStack& S) {
+	SElemType* p = S.base;
+	printf("栈内元素为：:");
+	for (; p != S.top; p++) {
+		printf("%c ", *p);
+	}
+	printf("\n");
+}
+ 
+//利用栈进行圆括号匹配
+bool Matching(SqStack& S, char exp[]) {
+	int i = 0;
+	int len = strlen(exp);
+	while (i <= len) {
+		switch (exp[i]) {
+		case '(': {//左括号入栈
+			Push(S, exp[i]);
+			i++;
+			break;
+		}
+		case ')': {//匹配上左括号则左括号出栈
+			if (!StackEmpty(S) && GetTop(S) == '(') {
+				Pop(S);
+				i++;
+			}
+			else
+				return false;
+			break;
+		}
+		case '{': {//左括号入栈
+			Push(S, exp[i]);
+			i++;
+			break;
+		}
+		case '}': {//匹配上左括号则左括号出栈
+			if (!StackEmpty(S) && GetTop(S) == '{') {
+				Pop(S);
+				i++;
+			}
+			else
+				return false;
+			break;
+		}
+		case '[': {//左括号入栈
+			Push(S, exp[i]);
+			i++;
+			break;
+		}
+		case ']': {//匹配上左括号则左括号出栈
+			if (!StackEmpty(S) && GetTop(S) == '[') {
+				Pop(S);
+				i++;
+			}
+			else
+				return false;
+			break;
+		}
+		default:
+			i++;
+			break;
+		}
+	}
+	if (!StackEmpty(S))
+		return false;
+	return true;
+}
+ 
+int main() {
+	SqStack S;
+	InitStack(S);
+	char exp[20];
+	printf("输入一个只含有括号()[]{}的式子:\n"); 
+	scanf("%s", exp);
+	bool flg= Matching(S, exp);
+	if (flg)
+		printf("括号匹配成功!\n");
+	else
+		{
+		printf("括号匹配失败!\n");
+	    PrintStack(S);
+	    }
+}
